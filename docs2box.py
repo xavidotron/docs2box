@@ -33,6 +33,7 @@ SKIP_NOUNS = ('shard', 'runes', 'stone')
 EXTRACT_RE = re.compile(ur'^(?:The )?["“]([^"]+)["”](?:, a)? (?:[Bb]luesheet|[Rr]itual)')
 
 DUPLEX = {'char'}
+TRANSFERABLE = {'Rituals'}
 
 OUTDIR = 'Fading Lights/'
 
@@ -179,7 +180,8 @@ def main():
                 namep = reader.pages[0]
                 reader = pyPdf.PdfFileReader(open(sheet))
                 for p in reader.pages:
-                    p.mergePage(namep)
+                    if sheet.split('/', 2)[1] not in TRANSFERABLE:
+                        p.mergePage(namep)
                     outpages.append(p)
                     writer.addPage(p)
                 color = None
@@ -197,7 +199,11 @@ def main():
                         break
                 else:
                     assert False, repr(s)
-        writer.write(open('%sPackets/%s' % (OUTDIR, name_dot_pdf), 'w'))
+        if ', ' in name_dot_pdf:
+            shortnamepdf = name_dot_pdf.split(', ', 1)[0] + '.pdf'
+        else:
+            shortnamepdf = name_dot_pdf
+        writer.write(open('%sPackets/%s' % (OUTDIR, shortnamepdf), 'w'))
     print('Skipped:', skipped)
     print('Extracted:', extracted)
 
